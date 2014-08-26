@@ -68,7 +68,7 @@ def test(list,tq):
     return True
 
 def simulate(proc_list,number,tq,cst,out,code):
-    f = open(out,"wb")
+    f = open(out,"ab")
     _buffer = [proc_list[i].service_time for i in range(number)]
     while sum(_buffer):
         flag = test(_buffer,tq)
@@ -100,6 +100,18 @@ def main():
         _buffer = [proc_list[i].service_time for i in range(number)]
 
         file_list = ["out1","out2","out3","out4"]
+        f = open("out1","w")
+        f.write("\tWITHOUT CONSIDERING ARRIVAL TIME OR CONTEXT SWITCH TIME\n");
+        f.close()
+        f = open("out2","w")
+        f.write("\tCONSIDERING ARRIVAL TIME AND WITHOUT CONSIDERING CONTEXT SWITCH TIME\n");
+        f.close()
+        f = open("out3","w")
+        f.write("\tWITHOUT CONSIDERING ARRIVAL TIME AND CONSIDERING CONTEXT SWITCH TIME\n");
+        f.close()
+        f = open("out4","w")
+        f.write("\tCONSIDERING ARRIVAL TIME AND CONTEXT SWITCH TIME\n");
+        f.close()
 
         for i in range(4):
             simulate(proc_list,number,tq,cst,file_list[i],i)
