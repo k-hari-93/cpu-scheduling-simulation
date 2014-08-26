@@ -15,9 +15,10 @@ class Process(object):
         self.service_time = service_time
         self.arrival_time = arrival_time
 
-    def simulate(self,f,tq,cst):
+    def simulate(self,f,tq,cst,code,check):
         global elapsed_time
         flag = self.service_time>tq
+
         if flag:
             f.write("t={} p={} slot={} {}".format(elapsed_time,self.pname,tq,"\n"))
             elapsed_time += tq
@@ -26,6 +27,10 @@ class Process(object):
             f.write("t={} p={} slot={} {}".format(elapsed_time,self.pname,self.service_time,"FINISHED\n"))
             elapsed_time += self.service_time
             self.service_time = 0
+
+        if (code == 2 or code == 3) and check:
+            f.write("t={} p={} slot={} {}".format(elapsed_time,"scheduler",cst,"\n"))
+            elapsed_time += cst
 
 
 def get_params(f):
@@ -51,20 +56,32 @@ def get_params(f):
         proc = Process(pname, service_time, arr_time)
         proc_list.append(proc)
 
-
     return number,tq,cst,proc_list
+def test(list,tq):
+    count = 0
+    l = len(list)
+    for i in range(l):
+        if list[i] == 0:
+            count += 1
+    if count == (l-1) and sum(list) <= tq:
+        return False
+    return True
 
-def simulate1(proc_list,number,tq,cst,out):
+def simulate(proc_list,number,tq,cst,out,code):
     f = open(out,"wb")
     _buffer = [proc_list[i].service_time for i in range(number)]
     while sum(_buffer):
+        flag = test(_buffer,tq)
         for i in range(number):
             if proc_list[i].service_time is not 0:
-                proc_list[i].simulate(f,tq,cst)
+                if ((code == 1 or code == 3 ) and elapsed_time >= proc_list[i].arrival_time) or (code == 0 or code == 2):
+                    proc_list[i].simulate(f,tq,cst,code,flag)
         _buffer = [proc_list[i].service_time for i in range(number)]
     f.close()
 
 def refresh(proc_list,_buffer,number):
+    global elapsed_time
+    elapsed_time = 0
     for i in range(number):
         proc_list[i].service_time = _buffer[i]
 
@@ -82,27 +99,18 @@ def main():
         proc_list = sorted(proc_list,key=operator.attrgetter("arrival_time"))
         _buffer = [proc_list[i].service_time for i in range(number)]
 
+        file_list = ["out1","out2","out3","out4"]
 
-        simulate1(proc_list,number,tq,cst,"out1")
-        refresh(proc_list,_buffer,number)
-        #simulate2(proc_list,number,tq,cst,"out2")
-        refresh(proc_list,_buffer,number)
-        #simulate3(proc_list,number,tq,cst,"out3")
-        refresh(proc_list,_buffer,number)
-        #simulate4(proc_list,number,tq,cst,"out4")
-        '''
-        for i in range(number):
-            print proc_list[i].service_time
-        '''
+        for i in range(4):
+            simulate(proc_list,number,tq,cst,file_list[i],i)
+            refresh(proc_list,_buffer,number)
+
         f.close()
 
     except FileNotFoundError:
         print "FileError: File Not Found"
     except AssertionError:
         print "UsageError: Please specify exactly one input file"
-
-
-
 
 if __name__ == "__main__":
     main()
