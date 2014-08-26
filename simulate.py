@@ -15,6 +15,19 @@ class Process(object):
         self.service_time = service_time
         self.arrival_time = arrival_time
 
+    def simulate(self,f,tq,cst):
+        global elapsed_time
+        flag = self.service_time>tq
+        if flag:
+            f.write("t={} p={} slot={} {}".format(elapsed_time,self.pname,tq,"\n"))
+            elapsed_time += tq
+            self.service_time -= tq
+        else:
+            f.write("t={} p={} slot={} {}".format(elapsed_time,self.pname,self.service_time,"FINISHED\n"))
+            elapsed_time += self.service_time
+            self.service_time = 0
+
+
 def get_params(f):
     p = f.readline()
     list = p.split(':')
@@ -41,9 +54,19 @@ def get_params(f):
 
     return number,tq,cst,proc_list
 
-def simulate1(proc_list,out):
-    for i
+def simulate1(proc_list,number,tq,cst,out):
+    f = open(out,"wb")
+    _buffer = [proc_list[i].service_time for i in range(number)]
+    while sum(_buffer):
+        for i in range(number):
+            if proc_list[i].service_time is not 0:
+                proc_list[i].simulate(f,tq,cst)
+        _buffer = [proc_list[i].service_time for i in range(number)]
+    f.close()
 
+def refresh(proc_list,_buffer,number):
+    for i in range(number):
+        proc_list[i].service_time = _buffer[i]
 
 def main():
     try:
@@ -52,21 +75,25 @@ def main():
 
         if not os.path.exists(proc_file):
             raise FileNotFoundError
-        f = open(proc_file,"r")
+        f = open(proc_file,"rb")
 
         number,tq,cst,proc_list = get_params(f)
 
         proc_list = sorted(proc_list,key=operator.attrgetter("arrival_time"))
+        _buffer = [proc_list[i].service_time for i in range(number)]
 
+
+        simulate1(proc_list,number,tq,cst,"out1")
+        refresh(proc_list,_buffer,number)
+        #simulate2(proc_list,number,tq,cst,"out2")
+        refresh(proc_list,_buffer,number)
+        #simulate3(proc_list,number,tq,cst,"out3")
+        refresh(proc_list,_buffer,number)
+        #simulate4(proc_list,number,tq,cst,"out4")
         '''
         for i in range(number):
-            print proc_list[i].arrival_time
+            print proc_list[i].service_time
         '''
-        simulate1(proc_list,number,tq,cst,"out1")
-        simulate2(proc_list,number,tq,cst,"out2")
-        simulate3(proc_list,number,tq,cst,"out3")
-        simulate4(proc_list,number,tq,cst,"out4")
-
         f.close()
 
     except FileNotFoundError:
