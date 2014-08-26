@@ -15,9 +15,6 @@ class Process(object):
         self.service_time = service_time
         self.arrival_time = arrival_time
 
-def openfile(f):
-    return open(f,"r+")
-
 def get_params(f):
     p = f.readline()
     list = p.split(':')
