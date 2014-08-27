@@ -14,9 +14,14 @@ class Process(object):
         self.pname = pname
         self.service_time = service_time
         self.arrival_time = arrival_time
+        self.tr_time = 0
+        self.wait_time = 0
+        self.wait_flag = 1
 
     def simulate(self,f,tq,cst,code,check):
         global elapsed_time
+
+        self.wait_flag = 0
         flag = self.service_time>tq
 
         if flag:
@@ -27,6 +32,11 @@ class Process(object):
             f.write("t={} p={} slot={} {}".format(elapsed_time,self.pname,self.service_time,"FINISHED\n"))
             elapsed_time += self.service_time
             self.service_time = 0
+            if code == 1 or code == 3:
+                self.tr_time = elapsed_time - self.arrival_time
+            else:
+                self.tr_time = elapsed_time
+
 
         if (code == 2 or code == 3) and check:
             f.write("t={} p={} slot={} {}".format(elapsed_time,"scheduler",cst,"\n"))
@@ -69,14 +79,31 @@ def test(list,tq):
 
 def simulate(proc_list,number,tq,cst,out,code):
     f = open(out,"ab")
+    tr_total = 0.0
+    wait_total = 0.0
+
     _buffer = [proc_list[i].service_time for i in range(number)]
+
     while sum(_buffer):
         flag = test(_buffer,tq)
         for i in range(number):
             if proc_list[i].service_time is not 0:
                 if ((code == 1 or code == 3 ) and elapsed_time >= proc_list[i].arrival_time) or (code == 0 or code == 2):
+                    if  proc_list[i].wait_flag:
+                        if code == 1 or code == 3:
+                            proc_list[i].wait_time = elapsed_time - proc_list[i].arrival_time
+                        else:
+                            proc_list[i].wait_time = elapsed_time
                     proc_list[i].simulate(f,tq,cst,code,flag)
         _buffer = [proc_list[i].service_time for i in range(number)]
+    for i in range(number):
+        f.write("TRnd({}) = {}\n".format(proc_list[i].pname,proc_list[i].tr_time))
+        tr_total += proc_list[i].tr_time
+    f.write("Average TRnd Time : {}\n".format(tr_total/number))
+    for i in range(number):
+        f.write("W({}) = {}\n".format(proc_list[i].pname,proc_list[i].wait_time))
+        wait_total += proc_list[i].wait_time
+    f.write("Average Wait Time : {}\n".format(wait_total/number))
     f.close()
 
 def refresh(proc_list,_buffer,number):
@@ -84,6 +111,9 @@ def refresh(proc_list,_buffer,number):
     elapsed_time = 0
     for i in range(number):
         proc_list[i].service_time = _buffer[i]
+        proc_list[i].tr_time = 0
+        proc_list[i].wait_time = 0
+        proc_list[i].wait_flag = 1
 
 def main():
     try:
