@@ -25,11 +25,11 @@ class Process(object):
         flag = self.service_time>tq
 
         if flag:
-            f.write("t={} p={} slot={} {}".format(elapsed_time,self.pname,tq,"\n"))
+            f.write("{}:{}:{}:{}".format(elapsed_time,self.pname,tq,"NOT FINISHED\n"))
             elapsed_time += tq
             self.service_time -= tq
         else:
-            f.write("t={} p={} slot={} {}".format(elapsed_time,self.pname,self.service_time,"FINISHED\n"))
+            f.write("{}:{}:{}:{}".format(elapsed_time,self.pname,self.service_time,"FINISHED\n"))
             elapsed_time += self.service_time
             self.service_time = 0
             if code == 1 or code == 3:
@@ -125,9 +125,10 @@ def main():
         f = open(proc_file,"rb")
 
         number,tq,cst,proc_list = get_params(f)
+        u_buffer = [proc_list[i].service_time for i in range(number)]
 
-        proc_list = sorted(proc_list,key=operator.attrgetter("arrival_time"))
-        _buffer = [proc_list[i].service_time for i in range(number)]
+        proc_list1 = sorted(proc_list,key=operator.attrgetter("arrival_time"))
+        s_buffer = [proc_list1[i].service_time for i in range(number)]
 
         file_list = ["out1","out2","out3","out4"]
         f = open("out1","w")
@@ -144,8 +145,13 @@ def main():
         f.close()
 
         for i in range(4):
-            simulate(proc_list,number,tq,cst,file_list[i],i)
-            refresh(proc_list,_buffer,number)
+            if i is 0 or i is 2:
+                simulate(proc_list,number,tq,cst,file_list[i],i)
+                refresh(proc_list,u_buffer,number)
+            else:
+                simulate(proc_list1,number,tq,cst,file_list[i],i)
+                refresh(proc_list1,s_buffer,number)
+
 
         f.close()
 
