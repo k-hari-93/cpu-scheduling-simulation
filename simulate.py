@@ -6,9 +6,6 @@ import operator
 
 elapsed_time = 0
 
-class FileNotFoundError(Exception):
-    pass
-
 class Process(object):
     def __init__(self, pname, service_time, arrival_time):
         self.pname = pname
@@ -39,7 +36,7 @@ class Process(object):
 
 
         if (code == 2 or code == 3) and check:
-            f.write("t={} p={} slot={} {}".format(elapsed_time,"scheduler",cst,"\n"))
+            f.write("{}:{}:{}:{}".format(elapsed_time,"scheduler",cst,"\n"))
             elapsed_time += cst
 
 
@@ -116,49 +113,42 @@ def refresh(proc_list,_buffer,number):
         proc_list[i].wait_flag = 1
 
 def main():
-    try:
-        assert len(sys.argv) == 2
-        proc_file = sys.argv[1]
+    if not len(sys.argv) == 2:
+        raise(Exception("Specify exactly one input file"))
+    proc_file = sys.argv[1]
 
-        if not os.path.exists(proc_file):
-            raise FileNotFoundError
-        f = open(proc_file,"rb")
+    if not os.path.exists(proc_file):
+        raise(Exception("No such file"))
+    f = open(proc_file,"rb")
 
-        number,tq,cst,proc_list = get_params(f)
-        u_buffer = [proc_list[i].service_time for i in range(number)]
+    number,tq,cst,proc_list = get_params(f)
+    f.close()
+    u_buffer = [proc_list[i].service_time for i in range(number)]
 
-        proc_list1 = sorted(proc_list,key=operator.attrgetter("arrival_time"))
-        s_buffer = [proc_list1[i].service_time for i in range(number)]
+    proc_list1 = sorted(proc_list,key=operator.attrgetter("arrival_time"))
+    s_buffer = [proc_list1[i].service_time for i in range(number)]
 
-        file_list = ["out1","out2","out3","out4"]
-        f = open("out1","w")
-        f.write("\tWITHOUT CONSIDERING ARRIVAL TIME OR CONTEXT SWITCH TIME\n");
-        f.close()
-        f = open("out2","w")
-        f.write("\tCONSIDERING ARRIVAL TIME AND WITHOUT CONSIDERING CONTEXT SWITCH TIME\n");
-        f.close()
-        f = open("out3","w")
-        f.write("\tWITHOUT CONSIDERING ARRIVAL TIME AND CONSIDERING CONTEXT SWITCH TIME\n");
-        f.close()
-        f = open("out4","w")
-        f.write("\tCONSIDERING ARRIVAL TIME AND CONTEXT SWITCH TIME\n");
-        f.close()
+    file_list = ["out1","out2","out3","out4"]
+    f = open("out1","w")
+    f.write("\tWITHOUT CONSIDERING ARRIVAL TIME OR CONTEXT SWITCH TIME\n");
+    f.close()
+    f = open("out2","w")
+    f.write("\tCONSIDERING ARRIVAL TIME AND WITHOUT CONSIDERING CONTEXT SWITCH TIME\n");
+    f.close()
+    f = open("out3","w")
+    f.write("\tWITHOUT CONSIDERING ARRIVAL TIME AND CONSIDERING CONTEXT SWITCH TIME\n");
+    f.close()
+    f = open("out4","w")
+    f.write("\tCONSIDERING ARRIVAL TIME AND CONTEXT SWITCH TIME\n");
+    f.close()
 
-        for i in range(4):
-            if i is 0 or i is 2:
-                simulate(proc_list,number,tq,cst,file_list[i],i)
-                refresh(proc_list,u_buffer,number)
-            else:
-                simulate(proc_list1,number,tq,cst,file_list[i],i)
-                refresh(proc_list1,s_buffer,number)
-
-
-        f.close()
-
-    except FileNotFoundError:
-        print "FileError: File Not Found"
-    except AssertionError:
-        print "UsageError: Please specify exactly one input file"
+    for i in range(4):
+        if i is 0 or i is 2:
+            simulate(proc_list,number,tq,cst,file_list[i],i)
+            refresh(proc_list,u_buffer,number)
+        else:
+            simulate(proc_list1,number,tq,cst,file_list[i],i)
+            refresh(proc_list1,s_buffer,number)
 
 if __name__ == "__main__":
     main()
