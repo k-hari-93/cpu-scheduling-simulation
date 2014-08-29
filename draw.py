@@ -2,7 +2,6 @@
 
 import sys
 import os
-import random
 import re
 import pygame
 
@@ -47,33 +46,36 @@ def main():
     x_cord = 10
     y_cord = 200
     height = 50
+    x_cor = 0
 
     done = False
-    flag = 0
     while not done:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 done = True
         list = []
         for proc in f:
-            if not flag:
-                match = re.search("\d+:\w+:\d+",proc)
-                if match:
-                    list = match.group().split(':')
-                    x_offset = int(list[0])
-                    p = str(list[1])
-                    width = 10*int(list[2])
-                    print list, width
+            match = re.search("\d+:\w+:\d+",proc)
+            if match:
+                list = match.group().split(':')
+                time = int(list[0])
+                p = str(list[1])
+                width = 7*int(list[2])
 
-                    if x_cord+x_offset >= size[0]:
-                        x_cor = 10
-                        y_cord += 200
-                    else:
-                        x_cor = x_cord+x_offset
-                screen.fill(color_map[p], [x_cor, y_cord,width,height])
-
-        flag = 1
-
+                if x_cord+width+x_cor >= size[0]-50:
+                    x_cord = 10
+                    y_cord += 200
+                    x_cor = 0
+                else:
+                    x_cord += x_cor
+                screen.fill(color_map[p], [x_cord, y_cord,width,height])
+                font = pygame.font.SysFont('Ariel', 20, True, False)
+                if not p == 'scheduler':
+                    text = font.render(p, True, BLACK)
+                    screen.blit(text, [x_cord+2,y_cord+2])
+                text = font.render(str(time),True,BLACK)
+                screen.blit(text, [x_cord,y_cord-15])
+                x_cor = width
         pygame.display.flip()
         clock.tick(60)
 
