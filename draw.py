@@ -27,7 +27,7 @@ def main():
 
     f = open(inFile,"r")
     color_map = get_map(f, color)
-    color_map["scheduler"] = 0xD8680E
+    color_map["scheduler"] = 0x000000
     f.close()
 
     f = open(inFile,"r")
