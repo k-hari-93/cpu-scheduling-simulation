@@ -91,8 +91,6 @@ def main():
     text = font.render(str(time+x_cor/8), True, BLACK)
     screen.blit(text, [x_cord+x_cor-20,y_cord-20])
 
-
-
     pygame.display.flip()
     done = False
     while not done:
