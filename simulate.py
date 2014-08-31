@@ -36,19 +36,19 @@ class Process(object):
 
 
         if (code == 2 or code == 3) and check:
-            f.write("{}:{}:{}:{}".format(elapsed_time,"scheduler",cst,"\n"))
+            f.write("{}:{}:{}{}".format(elapsed_time,"scheduler",cst,"\n"))
             elapsed_time += cst
 
 
 def get_params(f):
     p = f.readline()
-    list = p.split(':')
+    list = p.strip().split(':')
     number = int(list[1])
     p = f.readline()
-    list = p.split(':')
+    list = p.strip().split(':')
     tq = int(list[1])
     p = f.readline()
-    list = p.split(':')
+    list = p.strip().split(':')
     cst = int(list[1])
 
     list = []
@@ -56,7 +56,7 @@ def get_params(f):
 
     for i in range(number):
         p = f.readline()
-        list = p.split(':')
+        list = p.strip().split(':')
         pname = list[1]
         service_time = int(list[2])
         arr_time = int(list[3])

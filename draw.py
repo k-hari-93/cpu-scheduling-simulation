@@ -9,7 +9,7 @@ def get_map(f, color):
     map = {}
     j = 0
     for line in f:
-        match = re.search("\d+:\w+",line)
+        match = re.search("\s*\d+\s*:\s*\w+\s*",line)
         if match:
             if not match.group().split(':')[1] in map:
                 map[match.group().split(':')[1]] = color[j]
@@ -31,7 +31,9 @@ def main():
     f.close()
 
     f = open(inFile,"r")
-    title = f.readline().strip()
+    match = re.search("([A-Za-z]+\s*)*",f.readline().strip())
+    if match:
+        title = match.group()
 
     pygame.init()
 
@@ -54,8 +56,8 @@ def main():
     flag = 1
     list = []
     for proc in f:
-        match = re.search("\d+:\w+:\d+",proc)
-        match2 = re.search("Avera\w+.+",proc)
+        match = re.search("\s*\d+\s*:\s*\w+\s*:\s*\d+\s*",proc)
+        match2 = re.search("[Aa]vera\w+.+",proc)
         if match:
             list = match.group().split(':')
             time = int(list[0])
